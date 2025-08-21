@@ -93,6 +93,7 @@ namespace restaurantAPI.Controllers
                 }
                 
             }
+            order.TotalAmount = order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
 
             unitOfWork.Orders.Update(order);
             await unitOfWork.CompleteAsync();
