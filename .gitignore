@@ -52,3 +52,10 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Visual Studio temp files
+.vs/
+bin/
+obj/
+*.user
+*.suo
