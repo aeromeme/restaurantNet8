@@ -45,7 +45,7 @@ namespace restaurantAPI.Controllers
                 if (existingCategory == null) return BadRequest("Invalid category ID.");
                 product.Category = existingCategory;
             }
-
+            product.StockQuantity = 0; // Initialize stock to 0
             await unitOfWork.Products.AddAsync(product);
             await unitOfWork.CompleteAsync();   // persist changes
 
@@ -72,7 +72,6 @@ namespace restaurantAPI.Controllers
                 if (existingCategory == null) return BadRequest("Invalid category ID.");
                 product.Category = existingCategory;
             }
-
             // Map DTO → Entity
             mapper.Map(dto, product);
 

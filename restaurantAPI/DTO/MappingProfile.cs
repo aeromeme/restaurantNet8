@@ -10,12 +10,10 @@ namespace restaurantAPI.DTO
         {
             CreateMap<CreateProductDto, Product>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Name))
-            .ForMember(dest => dest.StockQuantity, opt => opt.MapFrom(src => src.Stock))
                  .ForMember(dest => dest.Category, opt => opt.Ignore());
 
             CreateMap<UpdateProductDto, Product>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.StockQuantity, opt => opt.MapFrom(src => src.Stock))
                 .ForMember(dest => dest.Category, opt => opt.Ignore());
 
             CreateMap<Product, ProductDto>()
