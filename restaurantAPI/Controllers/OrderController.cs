@@ -41,8 +41,19 @@ namespace restaurantAPI.Controllers
             foreach (var detail in dto.OrderDetails)
             {
                 var product = await unitOfWork.Products.GetByIdAsync(detail.ProductId);
-                order.OrderDetails.Add( new OrderDetail { ProductId= detail.ProductId, Quantity= detail.Quantity, UnitPrice= product.Price, Product=product });
+                if (product == null)
+                    return BadRequest($"Invalid product ID: {detail.ProductId}");
+
+                order.OrderDetails.Add(new OrderDetail
+                {
+                    ProductId = detail.ProductId,
+                    Quantity = detail.Quantity,
+                    UnitPrice = product.Price,
+                    Product = product
+                });
             }
+
+            order.TotalAmount = order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
 
             await unitOfWork.Orders.AddAsync(order);
             await unitOfWork.CompleteAsync();   // persist changes
@@ -75,7 +86,10 @@ namespace restaurantAPI.Controllers
             foreach (var detailDto in dto.OrderDetails)
             {
                 var product = await unitOfWork.Products.GetByIdAsync(detailDto.ProductId);
-                if (detailDto.OrderDetailId==0)
+                if (product == null)
+                    return BadRequest($"Invalid product ID: {detailDto.ProductId}");
+
+                if (detailDto.OrderDetailId == 0)
                 {
                     // add new detail
                     var newDetail = mapper.Map<OrderDetail>(detailDto);
@@ -91,7 +105,6 @@ namespace restaurantAPI.Controllers
                     mapper.Map(detailDto, existingDetail);
                     existingDetail.Product = product; // attach product
                 }
-                
             }
             order.TotalAmount = order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
 

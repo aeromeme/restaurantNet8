@@ -96,5 +96,13 @@ namespace restaurantAPI.Controllers
             return NoContent(); // 204
         }
 
+        [HttpGet("category/{categoryId}")]
+        [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetByCategory(int categoryId)
+        {
+            var products = await unitOfWork.Products.GetByCategoryWithCategoryAsync(categoryId);
+            var productDtos = mapper.Map<List<ProductDto>>(products);
+            return Ok(productDtos);
+        }
     }
 }

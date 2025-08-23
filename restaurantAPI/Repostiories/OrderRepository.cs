@@ -17,6 +17,7 @@ namespace restaurantAPI.Repostiories
             return await _context.Orders
                                  .Include(p => p.OrderDetails)  // single query, avoids N+1
                                  .ThenInclude(od => od.Product)  // include products in order details
+                                 .ThenInclude(p => p.Category) // include category in products
                                  .ToListAsync();
         }
 
@@ -25,6 +26,7 @@ namespace restaurantAPI.Repostiories
             return await _context.Orders
                                .Include(p => p.OrderDetails)  // single query, avoids N+1
                                .ThenInclude(od => od.Product)  // include products in order details
+                               .ThenInclude(p=> p.Category) // include category in products
                                .FirstOrDefaultAsync(p => p.OrderId == id);
         }
     }

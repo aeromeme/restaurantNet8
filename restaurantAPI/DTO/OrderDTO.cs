@@ -35,16 +35,13 @@ namespace restaurantAPI.DTO
 
         public virtual ICollection<OrderDetailDto> OrderDetails { get; set; } = new List<OrderDetailDto>();
     }
-    public  class OrderDetailDto:OrderDetailBaseDto
+    public class OrderDetailDto : OrderDetailBaseDto
     {
         public int OrderDetailId { get; set; }
-
         public int OrderId { get; set; }
-
         public decimal UnitPrice { get; set; }
-
         public ProductDto Product { get; set; }
 
-
+        public decimal Amount => UnitPrice * Quantity;
     }
 }

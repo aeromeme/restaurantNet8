@@ -6,5 +6,6 @@ namespace restaurantAPI.Repostiories
     {
         Task<IEnumerable<Product>> GetAllWithCategoryAsync();
         Task<Product?> GetByIdWithCategoryAsync(int id);
+        Task<IEnumerable<Product>> GetByCategoryWithCategoryAsync(int categoryId); // Add this
     }
 }

@@ -26,5 +26,13 @@ namespace restaurantAPI.Repostiories
                                  .Include(p => p.Category)
                                  .FirstOrDefaultAsync(p => p.ProductId == id);
         }
+
+        public async Task<IEnumerable<Product>> GetByCategoryWithCategoryAsync(int categoryId)
+        {
+            return await _context.Products
+                                 .Include(p => p.Category)
+                                 .Where(p => p.CategoryId == categoryId)
+                                 .ToListAsync();
+        }
     }
 }
