@@ -49,11 +49,13 @@ namespace restaurantAPI.Controllers
             await unitOfWork.Products.AddAsync(product);
             await unitOfWork.CompleteAsync();   // persist changes
 
-            var resultDto = mapper.Map<ProductDto>(product);
+            var newProduct = await unitOfWork.Products.GetByIdWithCategoryAsync(product.ProductId);
+            var resultDto = mapper.Map<ProductDto>(newProduct);
             return CreatedAtAction(nameof(GetById), new { id = product.ProductId }, resultDto);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Put(int id, UpdateProductDto dto)
@@ -67,18 +69,21 @@ namespace restaurantAPI.Controllers
 
             if (product.CategoryId != 0)
             {
-                // Load category from DB to avoid inserting a new one
                 var existingCategory = await unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
                 if (existingCategory == null) return BadRequest("Invalid category ID.");
                 product.Category = existingCategory;
             }
-            // Map DTO → Entity
+
             mapper.Map(dto, product);
 
             unitOfWork.Products.Update(product);
             await unitOfWork.CompleteAsync();
 
-            return NoContent(); // 204
+            // Fetch the updated product with its category
+            var updatedProduct = await unitOfWork.Products.GetByIdWithCategoryAsync(id);
+            var productDto = mapper.Map<ProductDto>(updatedProduct);
+
+            return Ok(productDto);
         }
 
         [HttpDelete("{id}")]

@@ -38,19 +38,14 @@ namespace restaurantAPI.Controllers
         {
             var order = mapper.Map<Order>(dto);
 
-            foreach (var detail in dto.OrderDetails)
+            foreach (var detail in order.OrderDetails)
             {
-                var product = await unitOfWork.Products.GetByIdAsync(detail.ProductId);
+                var product = await unitOfWork.Products.GetByIdWithCategoryAsync((int)detail.ProductId);
                 if (product == null)
                     return BadRequest($"Invalid product ID: {detail.ProductId}");
 
-                order.OrderDetails.Add(new OrderDetail
-                {
-                    ProductId = detail.ProductId,
-                    Quantity = detail.Quantity,
-                    UnitPrice = product.Price,
-                    Product = product
-                });
+                detail.Product = product; // attach product
+                detail.UnitPrice = product.Price; // set unit price from product
             }
 
             order.TotalAmount = order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
@@ -58,11 +53,15 @@ namespace restaurantAPI.Controllers
             await unitOfWork.Orders.AddAsync(order);
             await unitOfWork.CompleteAsync();   // persist changes
 
+            var neworder = await unitOfWork.Orders.GetByIdWithDetailAsync(order.OrderId);
+            var neworderDto = mapper.Map<OrderDto>(neworder);
+
             var resultDto = mapper.Map<OrderDto>(order);
             return CreatedAtAction(nameof(GetById), new { id = order.OrderId }, resultDto);
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Put(int id, OrderDto dto)
@@ -74,7 +73,6 @@ namespace restaurantAPI.Controllers
             if (order == null)
                 return NotFound();
 
-            // ✅ Sync details (master–detail logic)
             // Remove deleted details
             foreach (var existing in order.OrderDetails.ToList())
             {
@@ -85,7 +83,7 @@ namespace restaurantAPI.Controllers
             // Add or update details
             foreach (var detailDto in dto.OrderDetails)
             {
-                var product = await unitOfWork.Products.GetByIdAsync(detailDto.ProductId);
+                var product = await unitOfWork.Products.GetByIdWithCategoryAsync(detailDto.ProductId);
                 if (product == null)
                     return BadRequest($"Invalid product ID: {detailDto.ProductId}");
 
@@ -111,7 +109,11 @@ namespace restaurantAPI.Controllers
             unitOfWork.Orders.Update(order);
             await unitOfWork.CompleteAsync();
 
-            return NoContent(); // 204
+            // Fetch the updated order with details and products
+            var updatedOrder = await unitOfWork.Orders.GetByIdWithDetailAsync(id);
+            var orderDto = mapper.Map<OrderDto>(updatedOrder);
+
+            return Ok(orderDto);
         }
 
         [HttpDelete("{id}")]

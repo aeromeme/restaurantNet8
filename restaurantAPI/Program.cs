@@ -18,9 +18,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // Angular dev server
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
+            policy.WithOrigins(
+                "http://localhost:4200",    // Angular dev server
+                "http://localhost:5173"     // Vite, React, or another dev server
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
         });
 });
 builder.Services.AddControllers().AddJsonOptions(options =>
