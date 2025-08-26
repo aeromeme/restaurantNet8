@@ -25,6 +25,17 @@ namespace restaurantAPI.Migrations
                     table.PrimaryKey("PK__Categori__19093A2BFB989CE2", x => x.CategoryID);
                 });
 
+            // Insert initial categories
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "CategoryID", "CategoryName", "Description" },
+                values: new object[,]
+                {
+                    { 1, "Electronics", "Devices and gadgets" },
+                    { 2, "Furniture", "Home & Office items" },
+                    { 3, "Kitchen", "Cooking accessories" }
+                });
+
             migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
@@ -38,6 +49,15 @@ namespace restaurantAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK__Orders__C3905BAFD6E8DEB1", x => x.OrderID);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Orders",
+                columns: new[] { "OrderID", "CustomerName", "OrderDate", "TotalAmount" },
+                values: new object[,]
+                {
+                    { 1, "Alice Brown", new DateOnly(2025, 8, 18), 960.00m },
+                    { 2, "John Smith", new DateOnly(2025, 8, 19), 720.00m }
                 });
 
             migrationBuilder.CreateTable(
@@ -59,6 +79,17 @@ namespace restaurantAPI.Migrations
                         column: x => x.CategoryID,
                         principalTable: "Categories",
                         principalColumn: "CategoryID");
+                });
+
+            migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "ProductID", "ProductName", "CategoryID", "Price", "StockQuantity" },
+                values: new object[,]
+                {
+                    { 1, "Laptop", 2, 900.00m, 25 },
+                    { 2, "Phone", 3, 600.00m, 50 },
+                    { 3, "Desk Chair", 2, 120.00m, 40 },
+                    { 4, "Coffee Mug", 1, 10.00m, 200 }
                 });
 
             migrationBuilder.CreateTable(
@@ -86,6 +117,17 @@ namespace restaurantAPI.Migrations
                         column: x => x.ProductID,
                         principalTable: "Products",
                         principalColumn: "ProductID");
+                });
+
+            migrationBuilder.InsertData(
+                table: "OrderDetails",
+                columns: new[] { "OrderDetailID", "OrderID", "ProductID", "Quantity", "UnitPrice" },
+                values: new object[,]
+                {
+                    { 1, 1, 1, 1, 900.00m },
+                    { 2, 1, 4, 6, 10.00m },
+                    { 3, 2, 2, 1, 600.00m },
+                    { 4, 2, 3, 1, 120.00m }
                 });
 
             migrationBuilder.CreateIndex(
