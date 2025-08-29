@@ -1,10 +1,10 @@
+using restaurantAPI.Application.Interfaces;
+using restaurantAPI.Application.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using restaurantAPI.DTO;
+using restaurantAPI.Application.Mappers;
 using restaurantAPI.Models;
 using restaurantAPI.Tools;
 using restaurantAPI.UnitOfWork;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +40,8 @@ builder.Services.AddSwaggerGen(c =>
         Format = "date" // Swagger “date” format
     });
 });
+builder.Services.AddScoped<IProductAppService, ProductAppService>();
+builder.Services.AddScoped<IOrderAppService, OrderAppService>();
 
 var app = builder.Build();
 

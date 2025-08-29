@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
+using restaurantAPI.DTO;
 using restaurantAPI.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace restaurantAPI.DTO
+namespace restaurantAPI.Application.Mappers
 {
     public class MappingProfile : Profile
     {

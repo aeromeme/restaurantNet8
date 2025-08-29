@@ -1,22 +1,20 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using restaurantAPI.DTO;
-using restaurantAPI.Models;
-using restaurantAPI.UnitOfWork;
+using restaurantAPI.Application.Interfaces;
 
 namespace restaurantAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController(IUnitOfWork unitOfWork, IMapper mapper) : ControllerBase
+    public class ProductsController(IProductAppService productAppService, IMapper mapper) : ControllerBase
     {
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
-            var products = await unitOfWork.Products.GetAllWithCategoryAsync();
+            var products = await productAppService.GetAllAsync();
             var productDtos = mapper.Map<List<ProductDto>>(products);
             return Ok(productDtos);
         }
@@ -26,7 +24,7 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id)
         {
-            var product = await unitOfWork.Products.GetByIdWithCategoryAsync(id);
+            var product = await productAppService.GetByIdAsync(id);
             if (product == null) return NotFound();
             return Ok(mapper.Map<ProductDto>(product));
         }
@@ -36,22 +34,14 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(CreateProductDto dto)
         {
-            var product = mapper.Map<Product>(dto);
-            // Optional: attach existing category if using foreign key
-            if ( product.CategoryId != 0)
-            {
-                // Load category from DB to avoid inserting a new one
-                var existingCategory = await unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
-                if (existingCategory == null) return BadRequest("Invalid category ID.");
-                product.Category = existingCategory;
-            }
-            product.StockQuantity = 0; // Initialize stock to 0
-            await unitOfWork.Products.AddAsync(product);
-            await unitOfWork.CompleteAsync();   // persist changes
+            var (success, message, newProductId) = await productAppService.AddAsync(dto);
+            if (!success) return BadRequest(message);
 
-            var newProduct = await unitOfWork.Products.GetByIdWithCategoryAsync(product.ProductId);
+            var newProduct = await productAppService.GetByIdAsync(newProductId);
+            if (newProduct == null) return BadRequest("Product creation failed.");
+
             var resultDto = mapper.Map<ProductDto>(newProduct);
-            return CreatedAtAction(nameof(GetById), new { id = product.ProductId }, resultDto);
+            return CreatedAtAction(nameof(GetById), new { id = newProduct.ProductId }, resultDto);
         }
 
         [HttpPut("{id}")]
@@ -63,26 +53,18 @@ namespace restaurantAPI.Controllers
             if (id != dto.Id)
                 return BadRequest("Product ID mismatch.");
 
-            var product = await unitOfWork.Products.GetByIdAsync(id);
-            if (product == null)
-                return NotFound();
-
-            if (product.CategoryId != 0)
+            var (success, message) = await productAppService.UpdateAsync(dto);
+            if (!success)
             {
-                var existingCategory = await unitOfWork.Categories.GetByIdAsync(dto.CategoryId);
-                if (existingCategory == null) return BadRequest("Invalid category ID.");
-                product.Category = existingCategory;
+                if (message.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(message);
+                return BadRequest(message);
             }
 
-            mapper.Map(dto, product);
+            var updatedProduct = await productAppService.GetByIdAsync(id);
+            if (updatedProduct == null) return NotFound();
 
-            unitOfWork.Products.Update(product);
-            await unitOfWork.CompleteAsync();
-
-            // Fetch the updated product with its category
-            var updatedProduct = await unitOfWork.Products.GetByIdWithCategoryAsync(id);
             var productDto = mapper.Map<ProductDto>(updatedProduct);
-
             return Ok(productDto);
         }
 
@@ -91,23 +73,14 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-            var product = await unitOfWork.Products.GetByIdAsync(id);
-            if (product == null)
-                return NotFound();
-
-            unitOfWork.Products.Remove(product);
-            await unitOfWork.CompleteAsync();
-
+            var (success, message) = await productAppService.DeleteAsync(id);
+            if (!success)
+            {
+                if (message.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
+                    return NotFound(message);
+                return BadRequest(message);
+            }
             return NoContent(); // 204
-        }
-
-        [HttpGet("category/{categoryId}")]
-        [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetByCategory(int categoryId)
-        {
-            var products = await unitOfWork.Products.GetByCategoryWithCategoryAsync(categoryId);
-            var productDtos = mapper.Map<List<ProductDto>>(products);
-            return Ok(productDtos);
         }
     }
 }

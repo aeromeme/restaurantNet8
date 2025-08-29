@@ -27,6 +27,7 @@ namespace restaurantAPI.DTO
         public int Id { get; set; }
 
         public int Stock { get; set; }
+        public int CategoryId { get; set; }  // allow changing category
         public CategoryDto? Category { get; set; } // navigation property for read-only
     }
 }

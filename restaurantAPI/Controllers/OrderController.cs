@@ -1,23 +1,21 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using restaurantAPI.Application.Interfaces;
 using restaurantAPI.DTO;
-using restaurantAPI.Models;
-using restaurantAPI.UnitOfWork;
 
 namespace restaurantAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrderController(IUnitOfWork unitOfWork, IMapper mapper) : ControllerBase
+    public class OrderController(IOrderAppService orderAppService, IMapper mapper) : ControllerBase
     {
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<OrderDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
-            var order = await unitOfWork.Orders.GetAllWithDetailAsync();
-            var orderDtos = mapper.Map<List<OrderDto>>(order);
+            var orders = await orderAppService.GetAllAsync();
+            var orderDtos = mapper.Map<List<OrderDto>>(orders);
             return Ok(orderDtos);
         }
 
@@ -26,9 +24,10 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id)
         {
-            var order = await unitOfWork.Orders.GetByIdWithDetailAsync(id);
+            var order = await orderAppService.GetByIdAsync(id);
             if (order == null) return NotFound();
-            return Ok(mapper.Map<OrderDto>(order));
+            var orderDto = mapper.Map<OrderDto>(order);
+            return Ok(orderDto);
         }
 
         [HttpPost]
@@ -36,28 +35,16 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(CreateOrderDto dto)
         {
-            var order = mapper.Map<Order>(dto);
+            var result = await orderAppService.AddAsync(dto);
+            if (!result.Success)
+                return BadRequest(result.Message);
 
-            foreach (var detail in order.OrderDetails)
-            {
-                var product = await unitOfWork.Products.GetByIdWithCategoryAsync((int)detail.ProductId);
-                if (product == null)
-                    return BadRequest($"Invalid product ID: {detail.ProductId}");
+            // Optionally, fetch the created order to return
+            var createdOrder = await orderAppService.GetByIdAsync(result.NewOrderId ?? 0);
+            if (createdOrder == null) return BadRequest("Product creation failed.");
 
-                detail.Product = product; // attach product
-                detail.UnitPrice = product.Price; // set unit price from product
-            }
-
-            order.TotalAmount = order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
-
-            await unitOfWork.Orders.AddAsync(order);
-            await unitOfWork.CompleteAsync();   // persist changes
-
-            var neworder = await unitOfWork.Orders.GetByIdWithDetailAsync(order.OrderId);
-            var neworderDto = mapper.Map<OrderDto>(neworder);
-
-            var resultDto = mapper.Map<OrderDto>(order);
-            return CreatedAtAction(nameof(GetById), new { id = order.OrderId }, resultDto);
+            var resultDto = mapper.Map<OrderDto>(createdOrder);
+            return CreatedAtAction(nameof(GetById), new { id = result.NewOrderId }, resultDto);
         }
 
         [HttpPut("{id}")]
@@ -69,50 +56,18 @@ namespace restaurantAPI.Controllers
             if (id != dto.OrderId)
                 return BadRequest("Order ID mismatch.");
 
-            var order = await unitOfWork.Orders.GetByIdWithDetailAsync(id);
-            if (order == null)
-                return NotFound();
-
-            // Remove deleted details
-            foreach (var existing in order.OrderDetails.ToList())
+            var result = await orderAppService.UpdateAsync(dto);
+            if (!result.Success)
             {
-                if (!dto.OrderDetails.Any(d => d.OrderDetailId == existing.OrderDetailId))
-                    order.OrderDetails.Remove(existing);
+                if (result.Message.Contains("does not exist"))
+                    return NotFound(result.Message);
+                return BadRequest(result.Message);
             }
 
-            // Add or update details
-            foreach (var detailDto in dto.OrderDetails)
-            {
-                var product = await unitOfWork.Products.GetByIdWithCategoryAsync(detailDto.ProductId);
-                if (product == null)
-                    return BadRequest($"Invalid product ID: {detailDto.ProductId}");
+            var updatedOrder = await orderAppService.GetByIdAsync(id);
+            if (updatedOrder == null) return NotFound();
 
-                if (detailDto.OrderDetailId == 0)
-                {
-                    // add new detail
-                    var newDetail = mapper.Map<OrderDetail>(detailDto);
-                    newDetail.Product = product; // attach product
-                    order.OrderDetails.Add(newDetail);
-                }
-                else
-                {
-                    // update existing
-                    var existingDetail = order.OrderDetails
-                        .First(d => d.OrderDetailId == detailDto.OrderDetailId);
-
-                    mapper.Map(detailDto, existingDetail);
-                    existingDetail.Product = product; // attach product
-                }
-            }
-            order.TotalAmount = order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
-
-            unitOfWork.Orders.Update(order);
-            await unitOfWork.CompleteAsync();
-
-            // Fetch the updated order with details and products
-            var updatedOrder = await unitOfWork.Orders.GetByIdWithDetailAsync(id);
             var orderDto = mapper.Map<OrderDto>(updatedOrder);
-
             return Ok(orderDto);
         }
 
@@ -121,14 +76,14 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-            var order = await unitOfWork.Orders.GetByIdAsync(id);
-            if (order == null)
-                return NotFound();
-
-            unitOfWork.Orders.Remove(order);
-            await unitOfWork.CompleteAsync();
-
-            return NoContent(); // 204
+            var result = await orderAppService.DeleteAsync(id);
+            if (!result.Success)
+            {
+                if (result.Message.Contains("does not exist"))
+                    return NotFound(result.Message);
+                return BadRequest(result.Message);
+            }
+            return NoContent();
         }
     }
 }
