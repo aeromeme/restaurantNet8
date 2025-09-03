@@ -35,7 +35,8 @@ namespace restaurantAPI.Application.Mappers
             CreateMap<OrderDetail, OrderDetailDto>();
 
             CreateMap<OrderDetailDto, OrderDetail>()
-                .ForMember(dest => dest.Order, opt => opt.Ignore());
+                .ForMember(dest => dest.Order, opt => opt.Ignore())
+               .ForMember(dest => dest.Product, opt => opt.Ignore());
 
             CreateMap<CreateOrderDto, Order>();
             CreateMap<CreateOrderDetailDto, OrderDetail>();

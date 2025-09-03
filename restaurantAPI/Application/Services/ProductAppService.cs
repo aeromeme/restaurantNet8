@@ -61,34 +61,29 @@ namespace restaurantAPI.Application.Services
 
         public async Task<(bool Success, string Message)> UpdateAsync(UpdateProductDto updateProductDto)
         {
-            // Check if product exists
-            var existingProduct = await _unitOfWork.Products.GetByIdAsync(updateProductDto.Id);
-            if (existingProduct == null)
-            {
+            // Fetch the existing ORM entity
+            var ormProduct = await _unitOfWork.Products.GetByIdAsync(updateProductDto.Id);
+            if (ormProduct == null)
                 return (false, "Product does not exist.");
-            }
 
             // Check if category exists
             var category = await _unitOfWork.Categories.GetByIdAsync(updateProductDto.CategoryId);
             if (category == null)
-            {
                 return (false, "Category does not exist.");
-            }
 
-            // Map DTO to domain entity
-            var product = _mapper.Map<Product>(updateProductDto);
+            // Update properties using mapper
+            _mapper.Map(updateProductDto, ormProduct);
 
+            // Optionally validate domain logic here
+            var product = _mapper.Map<Product>(ormProduct);
             try
             {
-                product.Validate(); // Domain logic
+                product.Validate();
             }
             catch (ArgumentException ex)
             {
                 return (false, ex.Message);
             }
-
-            // Map domain entity to ORM model if needed
-            var ormProduct = _mapper.Map<Models.Product>(product);
 
             _unitOfWork.Products.Update(ormProduct);
             await _unitOfWork.CompleteAsync();

@@ -65,37 +65,76 @@ namespace restaurantAPI.Application.Services
 
         public async Task<(bool Success, string Message)> UpdateAsync(OrderDto updateOrderDto)
         {
-            var existingOrder = await _unitOfWork.Orders.GetByIdWithDetailAsync(updateOrderDto.OrderId);
-            if (existingOrder == null)
+            // Fetch the existing ORM entity (with details)
+            var ormOrder = await _unitOfWork.Orders.GetByIdWithDetailAsync(updateOrderDto.OrderId);
+            if (ormOrder == null)
                 return (false, "Order does not exist.");
+            var order = _mapper.Map<Order>(ormOrder);
+            
+            // Update main order properties
+            ormOrder.CustomerName = updateOrderDto.CustomerName;
+            ormOrder.OrderDate = updateOrderDto.OrderDate;
+            // ... update other simple properties as needed
 
-            // Map updates
-            var order = _mapper.Map<Order>(updateOrderDto);
+            // Update order details
+            // Get existing details as a list for easier lookup
+            var existingDetails = ormOrder.OrderDetails.ToList();
 
-            // Validate and map order details
-            foreach (var detail in order.OrderDetails)
+            // Build a lookup for existing details by OrderDetailId
+            var existingDetailsDict = ormOrder.OrderDetails.ToDictionary(d => d.OrderDetailId);
+
+            // Track which details are updated/added
+            var processedDetailIds = new HashSet<int>();
+
+            // 2. Update existing details using mapper
+            foreach (var detailDto in updateOrderDto.OrderDetails)
             {
-                var product = await _unitOfWork.Products.GetByIdAsync(detail.ProductId ?? 0);
+                var product = await _unitOfWork.Products.GetByIdAsync(detailDto.ProductId);
                 if (product == null)
-                    return (false, $"Product {detail.ProductId} does not exist.");
+                    return (false, $"Product {detailDto.ProductId} does not exist.");
 
-                detail.UnitPrice = product.Price;
-                detail.Validate();
+                if (detailDto.OrderDetailId != 0 && existingDetailsDict.TryGetValue(detailDto.OrderDetailId, out var existing))
+                {
+                    // Update existing detail using mapper
+                    _mapper.Map(detailDto, existing);
+                    existing.UnitPrice = product.Price;
+                    processedDetailIds.Add(detailDto.OrderDetailId);
+                }
+                else
+                {
+                    // Add new detail using mapper
+                    var newDetail = _mapper.Map<Models.OrderDetail>(detailDto);
+                    newDetail.UnitPrice = product.Price;
+                    ormOrder.OrderDetails.Add(newDetail);
+                }
             }
 
-            order.TotalAmount = order.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
+            // Delete details not present in the DTO
+            var toRemove = ormOrder.OrderDetails
+                .Where(d => d.OrderDetailId != 0 && !updateOrderDto.OrderDetails.Any(dto => dto.OrderDetailId == d.OrderDetailId))
+                .ToList();
 
+            foreach (var detail in toRemove)
+            {
+                ormOrder.OrderDetails.Remove(detail);
+            }
+
+            // Recalculate total amount
+            ormOrder.TotalAmount = ormOrder.OrderDetails.Sum(d => d.UnitPrice * d.Quantity);
+
+            order = _mapper.Map<Order>(ormOrder);
             try
             {
-                order.Validate();
+                order.Validate(); // Domain logic
             }
             catch (ArgumentException ex)
             {
                 return (false, ex.Message);
             }
 
-            var ormOrder = _mapper.Map<Models.Order>(order);
-            _unitOfWork.Orders.Update(ormOrder);
+            // Optionally validate domain logic here
+
+            _unitOfWork.Orders.Update(ormOrder); // or rely on tracking
             await _unitOfWork.CompleteAsync();
 
             return (true, "Order updated successfully.");

@@ -43,12 +43,15 @@ namespace restaurantAPI.Application.Mappers
             CreateMap<Domain.Entities.Order, OrderDto>();
             CreateMap<Domain.Entities.OrderDetail, OrderDetailDto>();
 
+            CreateMap<OrderDetailDto, Domain.Entities.OrderDetail>()
+                .ForMember(dest => dest.Product, opt => opt.Ignore());
+
             // Order: Model <-> Domain Entity
-            CreateMap<Models.Order, Domain.Entities.Order>();
+            CreateMap<Models.Order, Domain.Entities.Order>().ReverseMap();
 
-            CreateMap<Models.OrderDetail, Domain.Entities.OrderDetail>();
+            CreateMap<Models.OrderDetail, Domain.Entities.OrderDetail>().ReverseMap();
 
-            CreateMap<OrderDetailDto, Domain.Entities.OrderDetail>();
+           
 
             CreateMap<CreateOrderDto, Domain.Entities.Order>();
             CreateMap<CreateOrderDetailDto, Domain.Entities.OrderDetail>();
