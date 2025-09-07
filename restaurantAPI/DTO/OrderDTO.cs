@@ -40,7 +40,7 @@ namespace restaurantAPI.DTO
         public int OrderDetailId { get; set; }
         public int OrderId { get; set; }
         public decimal UnitPrice { get; set; }
-        public ProductDto Product { get; set; }
+        public ProductDto? Product { get; set; } // <-- Make nullable
 
         public decimal Amount => UnitPrice * Quantity;
     }

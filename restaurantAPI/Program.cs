@@ -5,6 +5,8 @@ using restaurantAPI.Application.Mappers;
 using restaurantAPI.Models;
 using restaurantAPI.Tools;
 using restaurantAPI.UnitOfWork;
+using restaurantAPI.Application.Products.UseCases;
+using restaurantAPI.Application.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +22,8 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins(
                 "http://localhost:4200",    // Angular dev server
-                "http://localhost:5173"     // Vite, React, or another dev server
+                "http://localhost:5173",
+                "http://localhost:3000"// Vite, React, or another dev server
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
@@ -29,7 +32,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
-}); ;
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -40,7 +43,8 @@ builder.Services.AddSwaggerGen(c =>
         Format = "date" // Swagger “date” format
     });
 });
-builder.Services.AddScoped<IProductAppService, ProductAppService>();
+builder.Services.AddProductUseCases();
+builder.Services.AddScoped<ProductAppService>();
 builder.Services.AddScoped<IOrderAppService, OrderAppService>();
 
 var app = builder.Build();

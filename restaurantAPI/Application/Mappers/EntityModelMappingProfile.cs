@@ -10,7 +10,7 @@ namespace restaurantAPI.Application.Mappers
         public EntityModelMappingProfile()
         {
             // Product: Model <-> Domain Entity
-            CreateMap<Models.Product, Domain.Entities.Product>()
+            CreateMap<Models.Product, Domain.Entities.ProductEntity>()
                 .ReverseMap();
 
             // Category: Model <-> Domain Entity
@@ -20,7 +20,7 @@ namespace restaurantAPI.Application.Mappers
 
 
             // Domain Entity -> DTO
-            CreateMap<Domain.Entities.Product, ProductDto>()
+            CreateMap<Domain.Entities.ProductEntity, ProductDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProductId))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.ProductName))
                 .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.StockQuantity))
@@ -31,11 +31,11 @@ namespace restaurantAPI.Application.Mappers
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.CategoryName))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
 
-            CreateMap<CreateProductDto, Domain.Entities.Product>()
+            CreateMap<CreateProductDto, Domain.Entities.ProductEntity>()
                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Name))
                .ForMember(dest => dest.Category, opt => opt.Ignore());
 
-            CreateMap<UpdateProductDto, Domain.Entities.Product>()
+            CreateMap<UpdateProductDto, Domain.Entities.ProductEntity>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Category, opt => opt.Ignore());
 

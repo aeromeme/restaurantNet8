@@ -1,6 +1,6 @@
 namespace restaurantAPI.Domain.Entities
 {
-    public class Product
+    public class ProductEntity
     {
         public int ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;

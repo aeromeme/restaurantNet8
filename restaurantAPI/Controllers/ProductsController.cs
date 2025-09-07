@@ -3,18 +3,19 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using restaurantAPI.DTO;
 using restaurantAPI.Application.Interfaces;
+using restaurantAPI.Application.Services;
 
 namespace restaurantAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController(IProductAppService productAppService, IMapper mapper) : ControllerBase
+    public class ProductsController(ProductAppService productAppService, IMapper mapper) : ControllerBase
     {
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProductDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get()
         {
-            var products = await productAppService.GetAllAsync();
+            var products = await productAppService.getAllProducts.ExecuteAsync();
             var productDtos = mapper.Map<List<ProductDto>>(products);
             return Ok(productDtos);
         }
@@ -24,7 +25,7 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id)
         {
-            var product = await productAppService.GetByIdAsync(id);
+            var product = await productAppService.getProductById.ExecuteAsync(id);
             if (product == null) return NotFound();
             return Ok(mapper.Map<ProductDto>(product));
         }
@@ -34,10 +35,10 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post(CreateProductDto dto)
         {
-            var (success, message, newProductId) = await productAppService.AddAsync(dto);
+            var (success, message, newProductId) = await productAppService.addProduct.ExecuteAsync(dto);
             if (!success) return BadRequest(message);
 
-            var newProduct = await productAppService.GetByIdAsync(newProductId);
+            var newProduct = await productAppService.getProductById.ExecuteAsync(newProductId);
             if (newProduct == null) return BadRequest("Product creation failed.");
 
             var resultDto = mapper.Map<ProductDto>(newProduct);
@@ -53,7 +54,7 @@ namespace restaurantAPI.Controllers
             if (id != dto.Id)
                 return BadRequest("Product ID mismatch.");
 
-            var (success, message) = await productAppService.UpdateAsync(dto);
+            var (success, message) = await productAppService.updateProduct.ExecuteAsync(dto);
             if (!success)
             {
                 if (message.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
@@ -61,7 +62,7 @@ namespace restaurantAPI.Controllers
                 return BadRequest(message);
             }
 
-            var updatedProduct = await productAppService.GetByIdAsync(id);
+            var updatedProduct = await productAppService.getProductById.ExecuteAsync(id);
             if (updatedProduct == null) return NotFound();
 
             var productDto = mapper.Map<ProductDto>(updatedProduct);
@@ -73,7 +74,7 @@ namespace restaurantAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-            var (success, message) = await productAppService.DeleteAsync(id);
+            var (success, message) = await productAppService.deleteProduct.ExecuteAsync(id);
             if (!success)
             {
                 if (message.Contains("does not exist", StringComparison.OrdinalIgnoreCase))

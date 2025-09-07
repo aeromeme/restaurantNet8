@@ -10,7 +10,7 @@ namespace restaurantAPI.Domain.Entities
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
 
-        public Product? Product { get; set; }
+        public ProductEntity? Product { get; set; }
 
         public void Validate()
         {
