@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using restaurantAPI.Application.Interfaces;
@@ -8,6 +9,7 @@ namespace restaurantAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class OrderController(IOrderAppService orderAppService, IMapper mapper) : ControllerBase
     {
         [HttpGet]
