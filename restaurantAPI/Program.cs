@@ -27,7 +27,8 @@ builder.Services.AddCors(options =>
             policy.WithOrigins(
                 "http://localhost:4200",    // Angular dev server
                 "http://localhost:5173",
-                "http://localhost:3000"// Vite, React, or another dev server
+                "http://localhost:3000",// Vite, React, or another dev
+                "http://localhost:5174"                    // server
             )
             .AllowAnyHeader()
             .AllowAnyMethod();

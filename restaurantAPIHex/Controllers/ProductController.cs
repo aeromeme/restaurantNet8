@@ -1,6 +1,7 @@
 ﻿using Application.DTO;
 using Application.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Models;
@@ -9,6 +10,7 @@ namespace restaurantAPIHex.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductController : ControllerBase
     {
         private readonly IGetAllProductsUseCase<ProductModel> _getAllProductsUseCase;

@@ -1,14 +1,16 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using restaurantAPI.DTO;
 using restaurantAPI.Application.Interfaces;
 using restaurantAPI.Application.Services;
+using restaurantAPI.DTO;
 
 namespace restaurantAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductsController(ProductAppService productAppService, IMapper mapper) : ControllerBase
     {
         [HttpGet]
