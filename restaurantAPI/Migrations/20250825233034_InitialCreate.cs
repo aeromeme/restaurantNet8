@@ -33,7 +33,7 @@ namespace restaurantAPI.Migrations
                 {
                     { 1, "Electronics", "Devices and gadgets" },
                     { 2, "Furniture", "Home & Office items" },
-                    { 3, "Kitchen", "Cooking accessories" }
+                    { 3, "Coffee", "Coffee beverages" }
                 });
 
             migrationBuilder.CreateTable(
@@ -86,10 +86,10 @@ namespace restaurantAPI.Migrations
                 columns: new[] { "ProductID", "ProductName", "CategoryID", "Price", "StockQuantity" },
                 values: new object[,]
                 {
-                    { 1, "Laptop", 2, 900.00m, 25 },
-                    { 2, "Phone", 3, 600.00m, 50 },
+                    { 1, "Laptop", 1, 900.00m, 25 },
+                    { 2, "Phone", 1, 600.00m, 50 },
                     { 3, "Desk Chair", 2, 120.00m, 40 },
-                    { 4, "Coffee Mug", 1, 10.00m, 200 }
+                    { 4, "Coffee Mug", 3, 10.00m, 200 }
                 });
 
             migrationBuilder.CreateTable(
