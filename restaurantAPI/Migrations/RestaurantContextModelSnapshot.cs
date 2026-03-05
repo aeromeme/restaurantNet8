@@ -45,7 +45,7 @@ namespace restaurantAPI.Migrations
                     b.HasKey("CategoryId")
                         .HasName("PK__Categori__19093A2BFB989CE2");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("restaurantAPI.Models.Order", b =>
@@ -72,7 +72,7 @@ namespace restaurantAPI.Migrations
                     b.HasKey("OrderId")
                         .HasName("PK__Orders__C3905BAFD6E8DEB1");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("restaurantAPI.Models.OrderDetail", b =>
@@ -105,7 +105,7 @@ namespace restaurantAPI.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderDetails", (string)null);
                 });
 
             modelBuilder.Entity("restaurantAPI.Models.Product", b =>
@@ -138,7 +138,7 @@ namespace restaurantAPI.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("restaurantAPI.Models.OrderDetail", b =>
