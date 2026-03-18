@@ -24,7 +24,8 @@ namespace restaurantAPI.Application.Extensions
             services.AddScoped<IRepository<Order>,Repository<Order>>();
             services.AddScoped<IRepository<OrderDetail>,Repository<OrderDetail>>();
             services.AddScoped<IOrderRepository,OrderRepository>();
-            
+            services.AddScoped<IRepository<Fan>, Repository<Fan>>();
+
             return services;
         }
     }

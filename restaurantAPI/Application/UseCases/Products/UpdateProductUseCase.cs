@@ -35,8 +35,6 @@ public class UpdateProductUseCase
         {
             return (false, ex.Message);
         }
-
-        _unitOfWork.Products.Update(ormProduct);
         await _unitOfWork.CompleteAsync();
 
         return (true, "Product updated successfully.");

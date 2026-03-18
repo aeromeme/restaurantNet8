@@ -15,13 +15,16 @@ namespace restaurantAPI.UnitOfWork
         public IOrderRepository OrderQuery { get; }
         public IRepository<OrderDetail> OrderDetails { get; }
 
+        public IRepository<Fan> Fans { get; }
 
-        public UnitOfWork(RestaurantContext context, IProductRepository productRepository, IRepository<Category> categoryRepository, IRepository<Order> orderRepository,IOrderRepository orderQueryRepository, IRepository<OrderDetail> orderDetailRepository)
+
+        public UnitOfWork(RestaurantContext context, IProductRepository productRepository, IRepository<Category> categoryRepository, IRepository<Order> orderRepository,IOrderRepository orderQueryRepository, IRepository<OrderDetail> orderDetailRepository, IRepository<Fan> fanRepository)
         {
             _context = context;
             Products = productRepository;
             Categories = categoryRepository;
             Orders = orderRepository;
+            Fans = fanRepository;
             OrderQuery = orderQueryRepository;
             OrderDetails = orderDetailRepository;
         }

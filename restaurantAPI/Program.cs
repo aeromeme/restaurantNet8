@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using restaurantAPI.DTO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +77,7 @@ builder.Services.AddProductUseCases();
 builder.Services.AddRepositories();
 builder.Services.AddScoped<ProductAppService>();
 builder.Services.AddScoped<IOrderAppService, OrderAppService>();
+builder.Services.AddScoped<IAppService<restaurantAPI.Domain.Entities.Fan,CreateFanDto, restaurantAPI.Domain.Entities.Fan>, FanAppService>();
 builder.Services.AddScoped<JwtService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"];

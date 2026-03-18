@@ -134,7 +134,6 @@ namespace restaurantAPI.Application.Services
 
             // Optionally validate domain logic here
 
-            _unitOfWork.Orders.Update(ormOrder); // or rely on tracking
             await _unitOfWork.CompleteAsync();
 
             return (true, "Order updated successfully.");
