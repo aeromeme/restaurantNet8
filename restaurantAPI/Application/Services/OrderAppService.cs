@@ -19,13 +19,13 @@ namespace restaurantAPI.Application.Services
 
         public async Task<IEnumerable<Order>> GetAllAsync()
         {
-            var orders = await _unitOfWork.Orders.GetAllWithDetailAsync();
+            var orders = await _unitOfWork.OrderQuery.GetAllWithDetailAsync();
             return _mapper.Map<List<Order>>(orders);
         }
 
         public async Task<Order?> GetByIdAsync(int id)
         {
-            var order = await _unitOfWork.Orders.GetByIdWithDetailAsync(id);
+            var order = await _unitOfWork.OrderQuery.GetByIdWithDetailAsync(id);
             return order == null ? null : _mapper.Map<Order>(order);
         }
 
@@ -66,7 +66,7 @@ namespace restaurantAPI.Application.Services
         public async Task<(bool Success, string Message)> UpdateAsync(OrderDto updateOrderDto)
         {
             // Fetch the existing ORM entity (with details)
-            var ormOrder = await _unitOfWork.Orders.GetByIdWithDetailAsync(updateOrderDto.OrderId);
+            var ormOrder = await _unitOfWork.OrderQuery.GetByIdWithDetailAsync(updateOrderDto.OrderId);
             if (ormOrder == null)
                 return (false, "Order does not exist.");
             var order = _mapper.Map<Order>(ormOrder);
@@ -142,7 +142,7 @@ namespace restaurantAPI.Application.Services
 
         public async Task<(bool Success, string Message)> DeleteAsync(int id)
         {
-            var ormOrder = await _unitOfWork.Orders.GetByIdWithDetailAsync(id);
+            var ormOrder = await _unitOfWork.OrderQuery.GetByIdWithDetailAsync(id);
             if (ormOrder == null)
                 return (false, "Order does not exist.");
 

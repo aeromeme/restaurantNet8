@@ -23,9 +23,11 @@ public partial class RestaurantContext : DbContext
 
     public virtual DbSet<Product> Products { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Server=localhost\\manusql;Database=restaurant;Trusted_Connection=True;TrustServerCertificate=True");
+    public virtual DbSet<Fan> Fans { get; set; }
+
+    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+    //        => optionsBuilder.UseSqlServer("Server=localhost\\manusql;Database=restaurant;Trusted_Connection=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -65,7 +67,7 @@ public partial class RestaurantContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.OrderId)
                 .HasConstraintName("FK__OrderDeta__Order__403A8C7D")
-                 .OnDelete(DeleteBehavior.Cascade); // 👈 important
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.Product).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.ProductId)
@@ -86,6 +88,25 @@ public partial class RestaurantContext : DbContext
             entity.HasOne(d => d.Category).WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
                 .HasConstraintName("FK__Products__Catego__3B75D760");
+        });
+
+        modelBuilder.Entity<Fan>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Fans__E5E8A1BFAF3C9B2B");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.YearsAsFan)
+                .HasColumnName("YearsAsFan");
+
+            entity.ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_Fan_YearsAsFan_Range", "[YearsAsFan] >= 0 AND [YearsAsFan] <= 100");
+            });
         });
 
         OnModelCreatingPartial(modelBuilder);

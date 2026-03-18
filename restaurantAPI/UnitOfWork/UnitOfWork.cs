@@ -10,16 +10,20 @@ namespace restaurantAPI.UnitOfWork
 
         public IProductRepository Products { get; }
         public IRepository<Category> Categories { get; }
-        public OrderRepository Orders { get; }
+        public IRepository<Order> Orders { get; }
+        
+        public IOrderRepository OrderQuery { get; }
         public IRepository<OrderDetail> OrderDetails { get; }
 
-        public UnitOfWork(RestaurantContext context)
+
+        public UnitOfWork(RestaurantContext context, IProductRepository productRepository, IRepository<Category> categoryRepository, IRepository<Order> orderRepository,IOrderRepository orderQueryRepository, IRepository<OrderDetail> orderDetailRepository)
         {
             _context = context;
-            Products = new ProductRepository(_context);
-            Categories = new Repository<Category>(_context);
-            Orders = new OrderRepository(_context);
-            OrderDetails = new Repository<OrderDetail>(_context);
+            Products = productRepository;
+            Categories = categoryRepository;
+            Orders = orderRepository;
+            OrderQuery = orderQueryRepository;
+            OrderDetails = orderDetailRepository;
         }
 
         public async Task<int> CompleteAsync()
