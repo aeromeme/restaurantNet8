@@ -10,6 +10,7 @@ namespace restaurantAPI.DTO
         [Required]
         public string Email { get; set; } = null!;
 
+        [Required]
         public int YearsAsFan { get; set; }
     }
 }
